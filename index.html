@@ -208,14 +208,12 @@
         }
 
         .source-translator-panel .panel-header {
-            /* justify-content: start; */
             gap: 16px;
             user-select: none;
             cursor: default;
         }
         
         #source-char-count {
-            /* font-size: 14px; */
         }
 
         .panel-actions {
@@ -328,7 +326,7 @@
             margin-bottom: 8px;
         }
 
-        .form-group input,
+        .form-group input:not([type='checkbox']),
         .form-group select,
         .form-group textarea {
             width: 100%;
@@ -388,20 +386,48 @@
             width: 24px;
             height: 24px;
         }
-
-        .slider-group {
+        
+        .param-control-group {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
+            margin-bottom: 12px;
         }
-        .slider-group input[type="range"] {
+        .param-control-group:last-child {
+            margin-bottom: 0;
+        }
+        .param-control-group label {
+            margin-bottom: 0;
+            font-weight: normal;
+            min-width: 80px;
+        }
+        .param-control-group input[type="range"],
+        .param-control-group select {
             flex-grow: 1;
         }
-        .slider-group span {
+        .param-control-group input[type="range"] {
+             padding: 0;
+        }
+        .param-control-group span {
             font-family: 'JetBrains Mono', monospace;
             min-width: 40px;
             text-align: right;
         }
+        .param-enable-checkbox {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+        .param-control-group input:disabled,
+        .param-control-group select:disabled,
+        .param-control-group span.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .param-control-group > label {
+            cursor: pointer;
+        }
+
 
         .toast {
             position: fixed;
@@ -533,29 +559,42 @@
                 <hr style="border: 1px solid var(--border-color); margin: 20px 0;">
                 <div class="form-group">
                     <label>LLM Parameters</label>
-                    <div class="slider-group">
+                    <div class="param-control-group">
+                        <input type="checkbox" id="temperature-enabled" class="param-enable-checkbox">
                         <label for="temperature">Temp</label>
                         <input type="range" id="temperature" min="0" max="2" step="0.05" value="1.0">
-                        <span id="temperature-value">1.0</span>
+                        <span id="temperature-value">1.00</span>
                     </div>
-                    <div class="slider-group">
-                        <label for="top-k">Top K</label>
+                    <div class="param-control-group">
+                        <input type="checkbox" id="top-k-enabled" class="param-enable-checkbox">
+                        <label for="top-k">Top K</label>
                         <input type="range" id="top-k" min="1" max="128" step="1" value="64">
                         <span id="top-k-value">64</span>
                     </div>
-                    <div class="slider-group">
-                        <label for="top-p">Top P</label>
+                    <div class="param-control-group">
+                        <input type="checkbox" id="top-p-enabled" class="param-enable-checkbox">
+                        <label for="top-p">Top P</label>
                         <input type="range" id="top-p" min="0" max="1" step="0.01" value="1.0">
-                        <span id="top-p-value">1.0</span>
+                        <span id="top-p-value">1.00</span>
                     </div>
-                    <div class="slider-group">
-                        <label for="min-p">Min P</label>
+                    <div class="param-control-group">
+                        <input type="checkbox" id="min-p-enabled" class="param-enable-checkbox">
+                        <label for="min-p">Min P</label>
                         <input type="range" id="min-p" min="0" max="1" step="0.01" value="0.0">
-                        <span id="min-p-value">0.0</span>
+                        <span id="min-p-value">0.00</span>
+                    </div>
+                    <div class="param-control-group">
+                        <input type="checkbox" id="reasoning-enabled" class="param-enable-checkbox">
+                        <label for="reasoning">Reasoning</label>
+                        <select id="reasoning">
+                            <option value="none">none</option>
+                            <option value="low">low</option>
+                            <option value="medium">medium</option>
+                            <option value="high">high</option>
+                        </select>
                     </div>
                 </div>
                  <hr style="border: 1px solid var(--border-color); margin: 20px 0;">
-                <!-- === NEW SECTION START === -->
                 <div class="form-group">
                     <label for="custom-languages">Custom Languages</label>
                     <textarea id="custom-languages" placeholder="One language per line. E.g.
@@ -565,7 +604,6 @@ Japanese"></textarea>
                     <small style="color: var(--icon-color); font-size: 13px; display: block; margin-top: 6px;">This list will populate the language dropdowns. If empty, a default list will be used.</small>
                 </div>
                 <hr style="border: 1px solid var(--border-color); margin: 20px 0;">
-                <!-- === NEW SECTION END === -->
                 <div class="form-group">
                     <label for="custom-instructions">Custom Instructions</label>
                     <textarea id="custom-instructions" placeholder="e.g., Translate in a formal tone."></textarea>
@@ -633,14 +671,25 @@ Japanese"></textarea>
         const apiCheckBtn = document.getElementById('api-check-btn');
         const apiCheckStatus = document.getElementById('api-check-status');
 
+        // --- LLM Parameter Elements ---
         const tempSlider = document.getElementById('temperature');
         const tempValue = document.getElementById('temperature-value');
+        const tempEnabledCheckbox = document.getElementById('temperature-enabled');
+
         const topKSlider = document.getElementById('top-k');
         const topKValue = document.getElementById('top-k-value');
+        const topKEnabledCheckbox = document.getElementById('top-k-enabled');
+
         const topPSlider = document.getElementById('top-p');
         const topPValue = document.getElementById('top-p-value');
+        const topPEnabledCheckbox = document.getElementById('top-p-enabled');
+
         const minPSlider = document.getElementById('min-p');
         const minPValue = document.getElementById('min-p-value');
+        const minPEnabledCheckbox = document.getElementById('min-p-enabled');
+
+        const reasoningSelect = document.getElementById('reasoning');
+        const reasoningEnabledCheckbox = document.getElementById('reasoning-enabled');
         
         const customLanguagesInput = document.getElementById('custom-languages');
         const customInstructionsInput = document.getElementById('custom-instructions');
@@ -689,6 +738,7 @@ Japanese"></textarea>
             // Settings
             loadSettings();
             populateLanguageSelectors();
+            updateParamUIState();
 
             // Event Listeners
             themeSwitcher.addEventListener('click', toggleTheme);
@@ -738,20 +788,35 @@ Japanese"></textarea>
                 saveSettings();
                 loadModels();
             });
-            apiKeyInput.addEventListener('change', saveSettings);
             modelSelect.addEventListener('change', () => {
                 selectedModelHeading.textContent = modelSelect.value;
                 saveSettings();
             });
 
-            tempSlider.addEventListener('input', () => { tempValue.textContent = parseFloat(tempSlider.value).toFixed(2); });
-            tempSlider.addEventListener('change', saveSettings);
-            topKSlider.addEventListener('input', () => { topKValue.textContent = parseInt(topKSlider.value); });
-            topKSlider.addEventListener('change', saveSettings);
-            topPSlider.addEventListener('input', () => { topPValue.textContent = parseFloat(topPSlider.value).toFixed(2); });
-            topPSlider.addEventListener('change', saveSettings);
-            minPSlider.addEventListener('input', () => { minPValue.textContent = parseFloat(minPSlider.value).toFixed(2); });
-            minPSlider.addEventListener('change', saveSettings);
+            // LLM Parameter Listeners
+            const paramControls = [
+                { slider: tempSlider, valueEl: tempValue, checkbox: tempEnabledCheckbox, fixed: 2 },
+                { slider: topKSlider, valueEl: topKValue, checkbox: topKEnabledCheckbox, fixed: 0 },
+                { slider: topPSlider, valueEl: topPValue, checkbox: topPEnabledCheckbox, fixed: 2 },
+                { slider: minPSlider, valueEl: minPValue, checkbox: minPEnabledCheckbox, fixed: 2 }
+            ];
+
+            paramControls.forEach(pc => {
+                pc.slider.addEventListener('input', () => { 
+                    pc.valueEl.textContent = parseFloat(pc.slider.value).toFixed(pc.fixed); 
+                });
+                pc.slider.addEventListener('change', saveSettings);
+                pc.checkbox.addEventListener('change', () => {
+                    updateParamUIState();
+                    saveSettings();
+                });
+            });
+
+            reasoningSelect.addEventListener('change', saveSettings);
+            reasoningEnabledCheckbox.addEventListener('change', () => {
+                updateParamUIState();
+                saveSettings();
+            });
 
             customLanguagesInput.addEventListener('change', () => {
                 saveSettings();
@@ -791,10 +856,22 @@ Japanese"></textarea>
                 apiUrl: apiBaseUrlInput.value.trim(),
                 apiKey: apiKeyInput.value.trim(),
                 model: modelSelect.value,
+                
                 temperature: tempSlider.value,
+                tempEnabled: tempEnabledCheckbox.checked,
+                
                 topK: topKSlider.value,
+                topKEnabled: topKEnabledCheckbox.checked,
+                
                 topP: topPSlider.value,
+                topPEnabled: topPEnabledCheckbox.checked,
+                
                 minP: minPSlider.value,
+                minPEnabled: minPEnabledCheckbox.checked,
+                
+                reasoning: reasoningSelect.value,
+                reasoningEnabled: reasoningEnabledCheckbox.checked,
+
                 customLanguages: customLanguagesInput.value.trim(),
                 customInstructions: customInstructionsInput.value.trim(),
                 translatePromptTemplate: translatePromptTemplateInput.value.trim(),
@@ -810,25 +887,65 @@ Japanese"></textarea>
             if (settings) {
                 apiBaseUrlInput.value = settings.apiUrl || '';
                 apiKeyInput.value = settings.apiKey || '';
+                
                 tempSlider.value = settings.temperature || 1.0;
+                tempEnabledCheckbox.checked = settings.tempEnabled ?? true;
                 tempValue.textContent = parseFloat(tempSlider.value).toFixed(2);
+                
                 topKSlider.value = settings.topK || 64;
+                topKEnabledCheckbox.checked = settings.topKEnabled ?? false;
                 topKValue.textContent = parseInt(topKSlider.value);
+                
                 topPSlider.value = settings.topP || 1.0;
+                topPEnabledCheckbox.checked = settings.topPEnabled ?? false;
                 topPValue.textContent = parseFloat(topPSlider.value).toFixed(2);
+                
                 minPSlider.value = settings.minP || 0.0;
+                minPEnabledCheckbox.checked = settings.minPEnabled ?? false;
                 minPValue.textContent = parseFloat(minPSlider.value).toFixed(2);
+                
+                reasoningSelect.value = settings.reasoning || 'none';
+                reasoningEnabledCheckbox.checked = settings.reasoningEnabled ?? false;
+
+                selectedModelHeading.textContent = settings.model || 'Model not set';
+
                 customLanguagesInput.value = settings.customLanguages || '';
                 customInstructionsInput.value = settings.customInstructions || DEFAULT_CUSTOM_INSTRUCTIONS;
                 translatePromptTemplateInput.value = settings.translatePromptTemplate || JSON.stringify(DEFAULT_TRANSLATE_PROMPT_TEMPLATE, null, 2);
                 summarizePromptTemplateInput.value = settings.summarizePromptTemplate || JSON.stringify(DEFAULT_SUMMARIZE_PROMPT_TEMPLATE, null, 2);
                 // Note: select values are set in populateLanguageSelectors
             } else {
-                // Default settings
+                // Default settings for a new user
+                tempEnabledCheckbox.checked = true;
+                topKEnabledCheckbox.checked = false;
+                topPEnabledCheckbox.checked = false;
+                minPEnabledCheckbox.checked = false; // min_p is off by default
+                reasoningEnabledCheckbox.checked = false; // reasoning is off by default
+
+                selectedModelHeading.textContent = 'Model not set';
+
                 customInstructionsInput.value = DEFAULT_CUSTOM_INSTRUCTIONS;
                 translatePromptTemplateInput.value = JSON.stringify(DEFAULT_TRANSLATE_PROMPT_TEMPLATE, null, 2);
                 summarizePromptTemplateInput.value = JSON.stringify(DEFAULT_SUMMARIZE_PROMPT_TEMPLATE, null, 2);
             }
+        };
+
+        const updateParamUIState = () => {
+            const allParamControls = [
+                { checkbox: tempEnabledCheckbox, controls: [tempSlider, tempValue] },
+                { checkbox: topKEnabledCheckbox, controls: [topKSlider, topKValue] },
+                { checkbox: topPEnabledCheckbox, controls: [topPSlider, topPValue] },
+                { checkbox: minPEnabledCheckbox, controls: [minPSlider, minPValue] },
+                { checkbox: reasoningEnabledCheckbox, controls: [reasoningSelect] }
+            ];
+
+            allParamControls.forEach(pc => {
+                const isDisabled = !pc.checkbox.checked;
+                pc.controls.forEach(control => {
+                    control.disabled = isDisabled;
+                    control.classList.toggle('disabled', isDisabled);
+                });
+            });
         };
 
         // --- Language List Management ---
@@ -878,6 +995,22 @@ Japanese"></textarea>
         };
 
         // --- API Interaction ---
+        const getLlmRequestBody = (messages) => {
+            const body = {
+                model: modelSelect.value,
+                messages,
+                stream: true,
+            };
+
+            if (tempEnabledCheckbox.checked) body.temperature = parseFloat(tempSlider.value);
+            if (topKEnabledCheckbox.checked) body.top_k = parseInt(topKSlider.value);
+            if (topPEnabledCheckbox.checked) body.top_p = parseFloat(topPSlider.value);
+            if (minPEnabledCheckbox.checked) body.min_p = parseFloat(minPSlider.value);
+            if (reasoningEnabledCheckbox.checked) body.reasoning_effort = reasoningSelect.value;
+            
+            return body;
+        }
+
         const loadModels = async () => {
             const baseUrl = apiBaseUrlInput.value.trim();
             if (!baseUrl) return;
@@ -905,17 +1038,20 @@ Japanese"></textarea>
                         modelSelect.appendChild(option);
                     });
                     const savedModel = JSON.parse(localStorage.getItem('translatorSettings'))?.model;
-                    if (savedModel) {
+                    if (savedModel && Array.from(modelSelect.options).some(opt => opt.value === savedModel)) {
                         modelSelect.value = savedModel;
-                        selectedModelHeading.textContent = savedModel || 'Select model';
                     }
+                    selectedModelHeading.textContent = modelSelect.value || 'Model not set';
+
                 } else {
                     modelSelect.innerHTML = '<option>No models found</option>';
+                    selectedModelHeading.textContent = 'No models found';
                 }
 
             } catch (error) {
                 console.error('Failed to load models:', error);
                 modelSelect.innerHTML = `<option>Failed to load</option>`;
+                selectedModelHeading.textContent = 'Failed to load';
                 showToast(`Failed to load models: ${error.message}`, 'error');
             }
         };
@@ -1023,33 +1159,33 @@ Japanese"></textarea>
         
         // --- Core Functionality ---
         const handleTranslation = (isRetry = false) => {
-            if (translationController/* && !isRetry*/) {
+            if (translationController) {
                 translationController.abort();
             }
 
             const translationStartedAt = Date.now();
-
             const text = inputTextArea.value.trim();
+
             if (!text) {
                 outputTextArea.value = '';
                 outputLoader.classList.add('d-none');
+                translationCounter.textContent = '';
                 return;
             }
             
             translationController = new AbortController();
             outputLoader.classList.remove('d-none');
             outputTextArea.value = '';
+            translationCounter.textContent = '';
 
             let messages;
             try {
                 messages = JSON.parse(translatePromptTemplateInput.value);
                 messages = messages.map(msg => {
                     let content = msg.content;
-
                     if (sourceLangSelect.value === 'auto') {
                         content = content.replace(/(from|FROM|From) \{\{source_language\}\}\s?/, '');
                     }
-
                     return {
                         ...msg,
                         content: content
@@ -1065,19 +1201,10 @@ Japanese"></textarea>
                 return;
             }
 
-            const requestBody = {
-                model: modelSelect.value,
-                messages,
-                temperature: parseFloat(tempSlider.value),
-                top_k: parseInt(topKSlider.value),
-                top_p: parseFloat(topPSlider.value),
-                min_p: parseFloat(minPSlider.value),
-                stream: true,
-            };
+            const requestBody = getLlmRequestBody(messages);
 
             const onChunk = (translatedText) => {
                 outputTextArea.value = translatedText;
-
                 const translationTimeSeconds = ((Date.now() - translationStartedAt) / 1000).toFixed(3);
                 translationCounter.textContent = `${translatedText.length} in ${translationTimeSeconds} s`;
             };
@@ -1109,15 +1236,9 @@ Japanese"></textarea>
             try {
                 messages = JSON.parse(summarizePromptTemplateInput.value);
                 messages = messages.map(msg => {
-                    let content = msg.content;
-
-                    if (sourceLangSelect.value === 'auto') {
-                        content = content.replace(/(from|FROM|From) \{\{source_language\}\}\s?/, '');
-                    }
-
                     return {
                         ...msg,
-                        content: content
+                        content: msg.content
                             .replace('{{source_language}}', sourceLangSelect.value)
                             .replace('{{target_language}}', targetLangSelect.value)
                             .replace('{{custom_instructions}}', customInstructionsInput.value)
@@ -1127,19 +1248,11 @@ Japanese"></textarea>
                 });
             } catch (e) {
                 showToast('Invalid JSON in prompt template.', 'error');
-                outputLoader.classList.add('d-none');
+                summaryModalBody.innerHTML = `<p style="color: var(--error-color);">Error: Invalid JSON in prompt template.</p>`;
                 return;
             }
 
-            const requestBody = {
-                model: modelSelect.value,
-                messages,
-                temperature: parseFloat(tempSlider.value),
-                top_k: parseInt(topKSlider.value),
-                top_p: parseFloat(topPSlider.value),
-                min_p: parseFloat(minPSlider.value),
-                stream: true,
-            };
+            const requestBody = getLlmRequestBody(messages);
 
             const onChunk = (summaryText) => {
                 summaryModalBody.textContent = summaryText;
@@ -1170,6 +1283,8 @@ Japanese"></textarea>
             inputTextArea.value = outputText;
             outputTextArea.value = inputText;
             
+            sourceCharCount.textContent = inputTextArea.value.length || '';
+
             saveSettings();
             handleTranslation(true);
         };
