@@ -900,7 +900,7 @@ Japanese"></textarea>
                     const savedModel = JSON.parse(localStorage.getItem('translatorSettings'))?.model;
                     if (savedModel) {
                         modelSelect.value = savedModel;
-                        selectedModelHeading.textContent = savedModel;
+                        selectedModelHeading.textContent = savedModel || 'Select model';
                     }
                 } else {
                     modelSelect.innerHTML = '<option>No models found</option>';
