@@ -734,6 +734,10 @@ Japanese"></textarea>
                 saveSettings();
                 loadModels();
             });
+            apiKeyInput.addEventListener('blur', () => {
+                saveSettings();
+                loadModels();
+            });
             apiKeyInput.addEventListener('change', saveSettings);
             modelSelect.addEventListener('change', () => {
                 selectedModelHeading.textContent = modelSelect.value;
