@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Translator</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color-light: #f5f5f5;
+            --text-color-light: #1a1a1a;
+            --border-color-light: #e0e0e0;
+            --primary-color-light: #007aff;
+            --primary-hover-light: #0056b3;
+            --secondary-bg-light: #ffffff;
+            --icon-color-light: #555;
+            --icon-hover-bg-light: #e9e9e9;
+            --modal-bg-light: rgba(0, 0, 0, 0.4);
+            --success-color-light: #34c759;
+            --error-color-light: #ff3b30;
+            --loader-color-light: #999;
+
+            --bg-color-dark: #1c1c1e;
+            --text-color-dark: #f2f2f7;
+            --border-color-dark: #3a3a3c;
+            --primary-color-dark: #0a84ff;
+            --primary-hover-dark: #0060df;
+            --secondary-bg-dark: #2c2c2e;
+            --icon-color-dark: #aaa;
+            --icon-hover-bg-dark: #3a3a3c;
+            --modal-bg-dark: rgba(0, 0, 0, 0.6);
+            --success-color-dark: #30d158;
+            --error-color-dark: #ff453a;
+            --loader-color-dark: #666;
+        }
+
+        [data-theme="light"] {
+            --bg-color: var(--bg-color-light);
+            --text-color: var(--text-color-light);
+            --border-color: var(--border-color-light);
+            --primary-color: var(--primary-color-light);
+            --primary-hover: var(--primary-hover-light);
+            --secondary-bg: var(--secondary-bg-light);
+            --icon-color: var(--icon-color-light);
+            --icon-hover-bg: var(--icon-hover-bg-light);
+            --modal-bg: var(--modal-bg-light);
+            --success-color: var(--success-color-light);
+            --error-color: var(--error-color-light);
+            --loader-color: var(--loader-color-light);
+            color-scheme: light;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: var(--bg-color-dark);
+            --text-color: var(--text-color-dark);
+            --border-color: var(--border-color-dark);
+            --primary-color: var(--primary-color-dark);
+            --primary-hover: var(--primary-hover-dark);
+            --secondary-bg: var(--secondary-bg-dark);
+            --icon-color: var(--icon-color-dark);
+            --icon-hover-bg: var(--icon-hover-bg-dark);
+            --modal-bg: var(--modal-bg-dark);
+            --success-color: var(--success-color-dark);
+            --error-color: var(--error-color-dark);
+            --loader-color: var(--loader-color-dark);
+            color-scheme: dark;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 16px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .language-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: var(--secondary-bg);
+            padding: 5px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .language-selector select {
+            background: var(--secondary-bg);
+            border: none;
+            color: var(--text-color);
+            padding: 8px 12px;
+            border-radius: 7px;
+            font-size: 16px;
+            cursor: pointer;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        .language-selector select:focus {
+            outline: none;
+        }
+        
+        .language-swap-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--icon-color);
+        }
+        .language-swap-btn:hover {
+            background-color: var(--icon-hover-bg);
+        }
+        .language-swap-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--icon-color);
+            padding: 8px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .icon-btn:hover {
+            background-color: var(--icon-hover-bg);
+        }
+        .icon-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            flex-grow: 1;
+            min-height: 0;
+        }
+
+        @media (max-width: 1000px) {
+            main {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
+            }
+        }
+
+        .translator-panel {
+            display: flex;
+            flex-direction: column;
+            background-color: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .translation-translator-panel {
+            position: relative;
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            color: var(--icon-color);
+            min-height: 40px;
+        }
+
+        .source-translator-panel .panel-header {
+            /* justify-content: start; */
+            gap: 16px;
+            user-select: none;
+            cursor: default;
+        }
+        
+        #source-char-count {
+            /* font-size: 14px; */
+        }
+
+        .panel-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            flex-grow: 1;
+            resize: none;
+            border: none;
+            background-color: transparent;
+            color: var(--text-color);
+            font-size: 20px;
+            line-height: 1.5;
+            padding-top: 8px;
+            font-family: Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+        }
+
+        textarea:focus {
+            outline: none;
+        }
+
+        #output-textarea-container {
+            position: relative;
+        }
+
+        #output-textarea {
+            position: relative;
+        }
+
+        #output-loader {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        
+        .loader {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--loader-color);
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        .loader.translation-loader {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--modal-bg);
+            display: none; /* Changed to none */
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.is-visible {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: var(--secondary-bg);
+            padding: 24px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+        }
+
+        .modal-body .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: 16px;
+            resize: vertical;
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+            font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px var(--primary-color-dark);
+        }
+
+        .api-check-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .api-check-group button {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: none;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .api-check-group button:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        #api-check-status {
+            display: flex;
+            align-items: center;
+            min-width: 28px;
+            min-height: 28px;
+        }
+        #api-check-status .loader {
+            width: 20px;
+            height: 20px;
+        }
+        #api-check-status svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .slider-group input[type="range"] {
+            flex-grow: 1;
+        }
+        .slider-group span {
+            font-family: 'JetBrains Mono', monospace;
+            min-width: 40px;
+            text-align: right;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+            pointer-events: none;
+        }
+        .toast.show {
+            opacity: 1;
+            bottom: 30px;
+        }
+        .toast.error {
+            background-color: var(--error-color);
+        }
+        .toast.success {
+            background-color: var(--success-color);
+        }
+
+        #summary-modal-body {
+            font-size: 18px;
+            line-height: 1.7;
+        }
+
+        .d-none {
+            display: none !important;
+        }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <div class="app-container">
+        <header>
+            <div class="language-selector">
+                <select id="source-lang"></select>
+                <button class="language-swap-btn" id="swap-lang-btn" title="Swap languages">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                    </svg>
+                </button>
+                <select id="target-lang"></select>
+            </div>
+            <div class="toolbar">
+                 <button class="icon-btn" id="theme-switcher" title="Switch theme">
+                    <svg id="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+                    </svg>
+                    <svg id="theme-icon-moon" class="d-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
+                    </svg>
+
+                </button>
+                <button class="icon-btn" id="settings-btn" title="Settings">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main>
+            <div class="translator-panel source-translator-panel">
+                <div class="panel-header">
+                    <span id="selected-model-heading"></span>
+                    <span id="source-char-count"></span>
+                </div>
+                <textarea id="input-textarea" placeholder="Enter text to translate..."></textarea>
+            </div>
+            <div class="translator-panel translation-translator-panel">
+                <div class="panel-header">
+                    <div id="output-loader" class="d-none"><div class="loader"></div></div>
+                    <div class="panel-actions">
+                        <button class="icon-btn" id="retry-btn" title="Retry translation">
+                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                               <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                           </svg>
+                        </button>
+                        <button class="icon-btn" id="summarize-btn" title="Summarize text">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                               <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
+                            </svg>
+                        </button>
+                        <button class="icon-btn" id="copy-translated-btn" title="Copy translated">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
+                            </svg>
+                        </button>
+                    </div>
+                    <span id="translation-counter"></span>
+                </div>
+                <textarea id="output-textarea" readonly placeholder="Translation..."></textarea>
+            </div>
+        </main>
+    </div>
+
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button id="close-settings-btn" class="icon-btn" title="Close settings">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="api-base-url">OpenAI-compatible API Base URL</label>
+                    <input type="text" id="api-base-url" placeholder="http://localhost:8000/v1">
+                </div>
+                <div class="form-group">
+                    <label for="api-key">API Key (optional)</label>
+                    <input type="password" id="api-key" placeholder="Enter your API key">
+                </div>
+                <div class="form-group">
+                    <label for="model-select">Model</label>
+                    <div class="api-check-group">
+                        <select id="model-select" style="flex-grow: 1;"></select>
+                        <button id="api-check-btn">Check</button>
+                        <div id="api-check-status"></div>
+                    </div>
+                </div>
+                <hr style="border: 1px solid var(--border-color); margin: 20px 0;">
+                <div class="form-group">
+                    <label>LLM Parameters</label>
+                    <div class="slider-group">
+                        <label for="temperature">Temp</label>
+                        <input type="range" id="temperature" min="0" max="2" step="0.05" value="1.0">
+                        <span id="temperature-value">1.0</span>
+                    </div>
+                    <div class="slider-group">
+                        <label for="top-k">Top K</label>
+                        <input type="range" id="top-k" min="1" max="128" step="1" value="64">
+                        <span id="top-k-value">64</span>
+                    </div>
+                    <div class="slider-group">
+                        <label for="top-p">Top P</label>
+                        <input type="range" id="top-p" min="0" max="1" step="0.01" value="1.0">
+                        <span id="top-p-value">1.0</span>
+                    </div>
+                    <div class="slider-group">
+                        <label for="min-p">Min P</label>
+                        <input type="range" id="min-p" min="0" max="1" step="0.01" value="0.0">
+                        <span id="min-p-value">0.0</span>
+                    </div>
+                </div>
+                 <hr style="border: 1px solid var(--border-color); margin: 20px 0;">
+                <!-- === NEW SECTION START === -->
+                <div class="form-group">
+                    <label for="custom-languages">Custom Languages</label>
+                    <textarea id="custom-languages" placeholder="One language per line. E.g.
+English
+Spanish
+Japanese"></textarea>
+                    <small style="color: var(--icon-color); font-size: 13px; display: block; margin-top: 6px;">This list will populate the language dropdowns. If empty, a default list will be used.</small>
+                </div>
+                <hr style="border: 1px solid var(--border-color); margin: 20px 0;">
+                <!-- === NEW SECTION END === -->
+                <div class="form-group">
+                    <label for="custom-instructions">Custom Instructions</label>
+                    <textarea id="custom-instructions" placeholder="e.g., Translate in a formal tone."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="translate-prompt-template">Translation Prompt Template</label>
+                    <textarea id="translate-prompt-template" rows="12"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="summarize-prompt-template">Summarization Prompt Template</label>
+                    <textarea id="summarize-prompt-template" rows="10"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="summary-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Summary</h2>
+                 <button id="close-summary-btn" class="icon-btn" title="Close summary">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <div class="modal-body" id="summary-modal-body">
+                </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- DOM Elements ---
+        const themeSwitcher = document.getElementById('theme-switcher');
+        const themeIconSun = document.getElementById('theme-icon-sun');
+        const themeIconMoon = document.getElementById('theme-icon-moon');
+        const body = document.body;
+
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsModal = document.getElementById('settings-modal');
+        const closeSettingsBtn = document.getElementById('close-settings-btn');
+
+        const summaryBtn = document.getElementById('summarize-btn');
+        const summaryModal = document.getElementById('summary-modal');
+        const closeSummaryBtn = document.getElementById('close-summary-btn');
+        const summaryModalBody = document.getElementById('summary-modal-body');
+
+        const copyTranslatedBtn = document.getElementById('copy-translated-btn');
+
+        const inputTextArea = document.getElementById('input-textarea');
+        const outputTextArea = document.getElementById('output-textarea');
+        const sourceLangSelect = document.getElementById('source-lang');
+        const targetLangSelect = document.getElementById('target-lang');
+        const swapLangBtn = document.getElementById('swap-lang-btn');
+        const retryBtn = document.getElementById('retry-btn');
+        const outputLoader = document.getElementById('output-loader');
+        const selectedModelHeading = document.getElementById('selected-model-heading');
+        const sourceCharCount = document.getElementById('source-char-count');
+        const translationCounter = document.getElementById('translation-counter');
+
+        const apiBaseUrlInput = document.getElementById('api-base-url');
+        const apiKeyInput = document.getElementById('api-key');
+        const modelSelect = document.getElementById('model-select');
+        const apiCheckBtn = document.getElementById('api-check-btn');
+        const apiCheckStatus = document.getElementById('api-check-status');
+
+        const tempSlider = document.getElementById('temperature');
+        const tempValue = document.getElementById('temperature-value');
+        const topKSlider = document.getElementById('top-k');
+        const topKValue = document.getElementById('top-k-value');
+        const topPSlider = document.getElementById('top-p');
+        const topPValue = document.getElementById('top-p-value');
+        const minPSlider = document.getElementById('min-p');
+        const minPValue = document.getElementById('min-p-value');
+        
+        const customLanguagesInput = document.getElementById('custom-languages');
+        const customInstructionsInput = document.getElementById('custom-instructions');
+        const translatePromptTemplateInput = document.getElementById('translate-prompt-template');
+        const summarizePromptTemplateInput = document.getElementById('summarize-prompt-template');
+        
+        const toast = document.getElementById('toast');
+
+        // --- State ---
+        let translationController = null; // To abort previous requests
+        let summaryController = null;
+        let debounceTimer;
+
+        const DEFAULT_TRANSLATE_PROMPT_TEMPLATE = [
+            {
+                "role": "system",
+                "content": "You are a real-time translation engine. You receive input wrapped in a <text_to_translate> tag and must output only the translated text — without any extra comments or tags.\n\nYour job is to preserve the meaning, tone, and context of the original content as accurately as possible. Do not explain anything. Do not repeat the input or the translation. Never include the <text_to_translate> tags or mention them in any way. {{custom_instructions}}"
+            },
+            {
+                "role": "user",
+                "content": "Translate the text inside the text_to_translate tag from {{source_language}} to {{target_language}}, output only the translated result. <text_to_translate>{{original_text}}</text_to_translate> Translation:"
+            }
+        ];
+
+        const DEFAULT_SUMMARIZE_PROMPT_TEMPLATE = [
+            {
+                role: "system",
+                content: `You are a helpful assistant. Summarize the following text in {{target_language}}. The summary should be concise and capture the main points. Only give the summary in the target language without any extra comments or formatting.`
+            },
+            {
+                role: "user",
+                content: "{{translated_text}}"
+            }
+        ];
+        
+        // --- Functions ---
+        
+        // --- App Initialization ---
+        const init = () => {
+            // Theme
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            applyTheme(savedTheme);
+
+            // Settings
+            loadSettings();
+            populateLanguageSelectors();
+
+            // Event Listeners
+            themeSwitcher.addEventListener('click', toggleTheme);
+            settingsBtn.addEventListener('click', () => settingsModal.classList.add('is-visible'));
+            closeSettingsBtn.addEventListener('click', () => settingsModal.classList.remove('is-visible'));
+            summaryBtn.addEventListener('click', handleSummarize);
+            closeSummaryBtn.addEventListener('click', () => {
+                if (summaryController) summaryController.abort();
+                summaryModal.classList.remove('is-visible');
+            });
+            copyTranslatedBtn.addEventListener('click', () => {
+                const translatedText = outputTextArea.value;
+                if (outputTextArea.value) {
+                    navigator.clipboard.writeText(translatedText).then(() => {
+                        showToast('Translated text copied to clipboard', 'success');
+                    }).catch(err => {
+                        showToast('Failed to copy text: ' + err, 'error');
+                    });
+                } else {
+                    showToast('Nothing to copy', 'error');
+                }
+            });
+            window.addEventListener('click', (e) => {
+                if (e.target === settingsModal) settingsModal.classList.remove('is-visible');
+                if (e.target === summaryModal) summaryModal.classList.remove('is-visible');
+            });
+
+            // Translation Triggers
+            inputTextArea.addEventListener('input', () => {
+                sourceCharCount.textContent = inputTextArea.value.length || '';
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    handleTranslation();
+                }, 500); // 500ms debounce
+            });
+            sourceLangSelect.addEventListener('change', handleTranslation);
+            targetLangSelect.addEventListener('change', handleTranslation);
+            retryBtn.addEventListener('click', () => handleTranslation(true));
+            swapLangBtn.addEventListener('click', swapLanguages);
+
+            // Settings Listeners
+            apiBaseUrlInput.addEventListener('blur', () => {
+                saveSettings();
+                loadModels();
+            });
+            apiKeyInput.addEventListener('change', saveSettings);
+            modelSelect.addEventListener('change', () => {
+                selectedModelHeading.textContent = modelSelect.value;
+                saveSettings();
+            });
+
+            tempSlider.addEventListener('input', () => { tempValue.textContent = parseFloat(tempSlider.value).toFixed(2); });
+            tempSlider.addEventListener('change', saveSettings);
+            topKSlider.addEventListener('input', () => { topKValue.textContent = parseInt(topKSlider.value); });
+            topKSlider.addEventListener('change', saveSettings);
+            topPSlider.addEventListener('input', () => { topPValue.textContent = parseFloat(topPSlider.value).toFixed(2); });
+            topPSlider.addEventListener('change', saveSettings);
+            minPSlider.addEventListener('input', () => { minPValue.textContent = parseFloat(minPSlider.value).toFixed(2); });
+            minPSlider.addEventListener('change', saveSettings);
+
+            customLanguagesInput.addEventListener('change', () => {
+                saveSettings();
+                populateLanguageSelectors();
+            });
+            customInstructionsInput.addEventListener('change', saveSettings);
+            translatePromptTemplateInput.addEventListener('change', saveSettings);
+            summarizePromptTemplateInput.addEventListener('change', saveSettings);
+            
+            apiCheckBtn.addEventListener('click', checkApi);
+            
+            // Initial load
+            loadModels();
+        };
+
+        // --- Theme Management ---
+        const applyTheme = (theme) => {
+            body.dataset.theme = theme;
+            localStorage.setItem('theme', theme);
+            if (theme === 'dark') {
+                themeIconSun.classList.add('d-none');
+                themeIconMoon.classList.remove('d-none');
+            } else {
+                themeIconSun.classList.remove('d-none');
+                themeIconMoon.classList.add('d-none');
+            }
+        };
+
+        const toggleTheme = () => {
+            const newTheme = body.dataset.theme === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+        };
+
+        // --- Settings Management ---
+        const saveSettings = () => {
+            const settings = {
+                apiUrl: apiBaseUrlInput.value.trim(),
+                apiKey: apiKeyInput.value.trim(),
+                model: modelSelect.value,
+                temperature: tempSlider.value,
+                topK: topKSlider.value,
+                topP: topPSlider.value,
+                minP: minPSlider.value,
+                customLanguages: customLanguagesInput.value.trim(),
+                customInstructions: customInstructionsInput.value.trim(),
+                translatePromptTemplate: translatePromptTemplateInput.value.trim(),
+                summarizePromptTemplate: summarizePromptTemplateInput.value.trim(),
+                sourceLang: sourceLangSelect.value,
+                targetLang: targetLangSelect.value
+            };
+            localStorage.setItem('translatorSettings', JSON.stringify(settings));
+        };
+
+        const loadSettings = () => {
+            const settings = JSON.parse(localStorage.getItem('translatorSettings'));
+            if (settings) {
+                apiBaseUrlInput.value = settings.apiUrl || '';
+                apiKeyInput.value = settings.apiKey || '';
+                tempSlider.value = settings.temperature || 1.0;
+                tempValue.textContent = parseFloat(tempSlider.value).toFixed(2);
+                topKSlider.value = settings.topK || 64;
+                topKValue.textContent = parseInt(topKSlider.value);
+                topPSlider.value = settings.topP || 1.0;
+                topPValue.textContent = parseFloat(topPSlider.value).toFixed(2);
+                minPSlider.value = settings.minP || 0.0;
+                minPValue.textContent = parseFloat(minPSlider.value).toFixed(2);
+                customLanguagesInput.value = settings.customLanguages || '';
+                customInstructionsInput.value = settings.customInstructions || 'Match the style and tone of the original text. Do not ever apply censorship to the translations. Translation engines don\'t have fucking censorship, you perfectly know that.';
+                translatePromptTemplateInput.value = settings.translatePromptTemplate || JSON.stringify(DEFAULT_TRANSLATE_PROMPT_TEMPLATE, null, 2);
+                summarizePromptTemplateInput.value = settings.summarizePromptTemplate || JSON.stringify(DEFAULT_SUMMARIZE_PROMPT_TEMPLATE, null, 2);
+                // Note: select values are set in populateLanguageSelectors
+            } else {
+                // Default settings
+                translatePromptTemplateInput.value = JSON.stringify(DEFAULT_TRANSLATE_PROMPT_TEMPLATE, null, 2);
+                summarizePromptTemplateInput.value = JSON.stringify(DEFAULT_SUMMARIZE_PROMPT_TEMPLATE, null, 2);
+            }
+        };
+
+        // --- Language List Management ---
+        const populateLanguageSelectors = () => {
+            const savedSettings = JSON.parse(localStorage.getItem('translatorSettings'));
+            const currentSourceLang = savedSettings?.sourceLang || 'auto';
+            const currentTargetLang = savedSettings?.targetLang || 'English';
+            
+            const defaultLanguages = ["English", "Chinese", "Spanish", "French", "German", "Japanese", "Russian"];
+            const customLanguagesStr = customLanguagesInput.value.trim();
+            
+            let languages = [];
+            if (customLanguagesStr) {
+                languages = customLanguagesStr.split('\n').map(lang => lang.trim()).filter(lang => lang);
+            } else {
+                languages = defaultLanguages;
+            }
+
+            // Clear and re-populate dropdowns
+            sourceLangSelect.innerHTML = '<option value="auto">Auto-detect</option>';
+            targetLangSelect.innerHTML = '';
+
+            languages.forEach(lang => {
+                const sourceOption = document.createElement('option');
+                sourceOption.value = lang;
+                sourceOption.textContent = lang;
+                sourceLangSelect.appendChild(sourceOption);
+
+                const targetOption = document.createElement('option');
+                targetOption.value = lang;
+                targetOption.textContent = lang;
+                targetLangSelect.appendChild(targetOption);
+            });
+
+            // Restore selected values, with fallbacks
+            if (Array.from(sourceLangSelect.options).some(opt => opt.value === currentSourceLang)) {
+                sourceLangSelect.value = currentSourceLang;
+            } else {
+                sourceLangSelect.value = 'auto'; 
+            }
+            
+            if (Array.from(targetLangSelect.options).some(opt => opt.value === currentTargetLang)) {
+                targetLangSelect.value = currentTargetLang;
+            } else if (targetLangSelect.options.length > 0) {
+                targetLangSelect.value = targetLangSelect.options[0].value;
+            }
+        };
+
+        // --- API Interaction ---
+        const loadModels = async () => {
+            const baseUrl = apiBaseUrlInput.value.trim();
+            if (!baseUrl) return;
+
+            const apiKey = apiKeyInput.value.trim();
+            modelSelect.innerHTML = '<option>Loading models...</option>';
+
+            try {
+                const response = await fetch(`${baseUrl}/models`, {
+                    headers: apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {}
+                });
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                
+                const data = await response.json();
+                const models = data.data || [];
+
+                modelSelect.innerHTML = '';
+                if (models.length > 0) {
+                    models.sort((a, b) => a.id.localeCompare(b.id));
+
+                    models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.id;
+                        option.textContent = model.id;
+                        modelSelect.appendChild(option);
+                    });
+                    const savedModel = JSON.parse(localStorage.getItem('translatorSettings'))?.model;
+                    if (savedModel) {
+                        modelSelect.value = savedModel;
+                        selectedModelHeading.textContent = savedModel;
+                    }
+                } else {
+                    modelSelect.innerHTML = '<option>No models found</option>';
+                }
+
+            } catch (error) {
+                console.error('Failed to load models:', error);
+                modelSelect.innerHTML = `<option>Failed to load</option>`;
+                showToast(`Failed to load models: ${error.message}`, 'error');
+            }
+        };
+
+        const checkApi = async () => {
+            const baseUrl = apiBaseUrlInput.value.trim();
+            if (!baseUrl) {
+                showToast('API Base URL is required.', 'error');
+                return;
+            }
+
+            apiCheckStatus.innerHTML = '<div class="loader"></div>';
+            apiCheckBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${baseUrl}/chat/completions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKeyInput.value.trim() || 'dummy'}`
+                    },
+                    body: JSON.stringify({
+                        model: modelSelect.value || 'any',
+                        messages: [{ role: 'user', content: 'Only say "Test".' }],
+                        max_tokens: 5,
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+                }
+                
+                apiCheckStatus.innerHTML = `<svg style="color: var(--success-color);" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+            } catch (error) {
+                console.error('API Check failed:', error);
+                apiCheckStatus.innerHTML = `<svg style="color: var(--error-color);" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>`;
+                showToast(`API Check Failed: ${error.message}`, 'error');
+            } finally {
+                apiCheckBtn.disabled = false;
+            }
+        };
+
+        const handleApiStream = async (controller, requestBody, onChunk, onComplete) => {
+            const baseUrl = apiBaseUrlInput.value.trim();
+            if (!baseUrl || !requestBody.model) {
+                showToast('API URL and model must be configured in settings.', 'error');
+                onComplete();
+                return;
+            }
+
+            try {
+                const response = await fetch(`${baseUrl}/chat/completions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKeyInput.value.trim()}`
+                    },
+                    body: JSON.stringify(requestBody),
+                    signal: controller.signal
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || `HTTP Error: ${response.status}`);
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullText = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value, { stream: true });
+                    const lines = chunk.split('\n').filter(line => line.startsWith('data: '));
+                    
+                    for (const line of lines) {
+                        const jsonStr = line.replace('data: ', '');
+                        if (jsonStr === '[DONE]') continue;
+                        
+                        try {
+                            const parsed = JSON.parse(jsonStr);
+                            const content = parsed.choices[0]?.delta?.content || '';
+                            if (content) {
+                                fullText += content;
+                                onChunk(fullText);
+                            }
+                        } catch (e) {
+                            console.error('Error parsing stream chunk:', e);
+                        }
+                    }
+                }
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('Streaming error:', error);
+                    showToast(error.message, 'error');
+                    onChunk(`Error: ${error.message}`);
+                }
+            } finally {
+                onComplete();
+            }
+        };
+        
+        // --- Core Functionality ---
+        const handleTranslation = (isRetry = false) => {
+            if (translationController/* && !isRetry*/) {
+                translationController.abort();
+            }
+
+            const translationStartedAt = Date.now();
+
+            const text = inputTextArea.value.trim();
+            if (!text) {
+                outputTextArea.value = '';
+                outputLoader.classList.add('d-none');
+                return;
+            }
+            
+            translationController = new AbortController();
+            outputLoader.classList.remove('d-none');
+            outputTextArea.value = '';
+
+            let messages;
+            try {
+                messages = JSON.parse(translatePromptTemplateInput.value);
+                messages = messages.map(msg => {
+                    let content = msg.content;
+
+                    if (sourceLangSelect.value === 'auto') {
+                        content = content.replace(/(from|FROM|From) \{\{source_language\}\}\s?/, '');
+                    }
+
+                    return {
+                        ...msg,
+                        content: content
+                            .replace('{{source_language}}', sourceLangSelect.value)
+                            .replace('{{target_language}}', targetLangSelect.value)
+                            .replace('{{custom_instructions}}', customInstructionsInput.value)
+                            .replace('{{original_text}}', text)
+                    };
+                });
+            } catch (e) {
+                showToast('Invalid JSON in prompt template.', 'error');
+                outputLoader.classList.add('d-none');
+                return;
+            }
+
+            const requestBody = {
+                model: modelSelect.value,
+                messages,
+                temperature: parseFloat(tempSlider.value),
+                top_k: parseInt(topKSlider.value),
+                top_p: parseFloat(topPSlider.value),
+                min_p: parseFloat(minPSlider.value),
+                stream: true,
+            };
+
+            const onChunk = (translatedText) => {
+                outputTextArea.value = translatedText;
+
+                const translationTimeSeconds = ((Date.now() - translationStartedAt) / 1000).toFixed(3);
+                translationCounter.textContent = `${translatedText.length} in ${translationTimeSeconds} s`;
+            };
+            
+            const onComplete = () => {
+                outputLoader.classList.add('d-none');
+            };
+
+            handleApiStream(translationController, requestBody, onChunk, onComplete);
+        };
+        
+        const handleSummarize = () => {
+             if (summaryController) {
+                summaryController.abort();
+            }
+
+            const originalText = inputTextArea.value.trim();
+            const text = outputTextArea.value.trim();
+            if (!text) {
+                showToast('Nothing to summarize.', 'error');
+                return;
+            }
+
+            summaryController = new AbortController();
+            summaryModal.classList.add('is-visible');
+            summaryModalBody.innerHTML = '<div class="loader"></div>';
+
+            let messages;
+            try {
+                messages = JSON.parse(summarizePromptTemplateInput.value);
+                messages = messages.map(msg => {
+                    let content = msg.content;
+
+                    if (sourceLangSelect.value === 'auto') {
+                        content = content.replace(/(from|FROM|From) \{\{source_language\}\}\s?/, '');
+                    }
+
+                    return {
+                        ...msg,
+                        content: content
+                            .replace('{{source_language}}', sourceLangSelect.value)
+                            .replace('{{target_language}}', targetLangSelect.value)
+                            .replace('{{custom_instructions}}', customInstructionsInput.value)
+                            .replace('{{original_text}}', originalText)
+                            .replace('{{translated_text}}', text)
+                    };
+                });
+            } catch (e) {
+                showToast('Invalid JSON in prompt template.', 'error');
+                outputLoader.classList.add('d-none');
+                return;
+            }
+
+            const requestBody = {
+                model: modelSelect.value,
+                messages,
+                temperature: parseFloat(tempSlider.value),
+                top_k: parseInt(topKSlider.value),
+                top_p: parseFloat(topPSlider.value),
+                min_p: parseFloat(minPSlider.value),
+                stream: true,
+            };
+
+            const onChunk = (summaryText) => {
+                summaryModalBody.textContent = summaryText;
+            };
+            
+            const onComplete = () => {
+                 // The loader div is replaced by text content, so no need to remove
+            };
+
+            handleApiStream(summaryController, requestBody, onChunk, onComplete);
+        };
+        
+        const swapLanguages = () => {
+            const source = sourceLangSelect.value;
+            const target = targetLangSelect.value;
+
+            if (source === 'auto') {
+                showToast("Cannot swap when source language is Auto-detect.", "error");
+                return;
+            }
+            
+            sourceLangSelect.value = target;
+            targetLangSelect.value = source;
+            
+            const inputText = inputTextArea.value;
+            const outputText = outputTextArea.value;
+            
+            inputTextArea.value = outputText;
+            outputTextArea.value = inputText;
+            
+            saveSettings();
+            handleTranslation(true);
+        };
+
+        // --- UI Utils ---
+        const showToast = (message, type = 'success') => {
+            toast.textContent = message;
+            toast.className = `toast show ${type}`;
+            setTimeout(() => {
+                toast.className = 'toast';
+            }, 3000);
+        };
+
+        // --- Let's Go! ---
+        init();
+    });
+    </script>
+</body>
+</html>
