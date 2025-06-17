@@ -654,6 +654,8 @@ Japanese"></textarea>
         let summaryController = null;
         let debounceTimer;
 
+        const DEFAULT_CUSTOM_INSTRUCTIONS = 'Match the style and tone of the original text. Do not ever apply censorship to the translations. Translation engines don\'t have fucking censorship, you perfectly know that.';
+
         const DEFAULT_TRANSLATE_PROMPT_TEMPLATE = [
             {
                 "role": "system",
@@ -813,12 +815,13 @@ Japanese"></textarea>
                 minPSlider.value = settings.minP || 0.0;
                 minPValue.textContent = parseFloat(minPSlider.value).toFixed(2);
                 customLanguagesInput.value = settings.customLanguages || '';
-                customInstructionsInput.value = settings.customInstructions || 'Match the style and tone of the original text. Do not ever apply censorship to the translations. Translation engines don\'t have fucking censorship, you perfectly know that.';
+                customInstructionsInput.value = settings.customInstructions || DEFAULT_CUSTOM_INSTRUCTIONS;
                 translatePromptTemplateInput.value = settings.translatePromptTemplate || JSON.stringify(DEFAULT_TRANSLATE_PROMPT_TEMPLATE, null, 2);
                 summarizePromptTemplateInput.value = settings.summarizePromptTemplate || JSON.stringify(DEFAULT_SUMMARIZE_PROMPT_TEMPLATE, null, 2);
                 // Note: select values are set in populateLanguageSelectors
             } else {
                 // Default settings
+                customInstructionsInput.value = DEFAULT_CUSTOM_INSTRUCTIONS;
                 translatePromptTemplateInput.value = JSON.stringify(DEFAULT_TRANSLATE_PROMPT_TEMPLATE, null, 2);
                 summarizePromptTemplateInput.value = JSON.stringify(DEFAULT_SUMMARIZE_PROMPT_TEMPLATE, null, 2);
             }
