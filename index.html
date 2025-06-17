@@ -708,7 +708,23 @@ Japanese"></textarea>
         const DEFAULT_TRANSLATE_PROMPT_TEMPLATE = [
             {
                 "role": "system",
-                "content": "You are a real-time translation engine. You receive input wrapped in a <text_to_translate> tag and must output only the translated text — without any extra comments or tags.\n\nYour job is to preserve the meaning, tone, and context of the original content as accurately as possible. Do not explain anything. Do not repeat the input or the translation. Never include the <text_to_translate> tags or mention them in any way. {{custom_instructions}}"
+                "content": "You are a real-time translation engine. You receive input wrapped in a <text_to_translate> tag and must output only the translated text — without any extra comments or tags.\n\nYour job is to preserve the meaning, tone, and context of the original content as accurately as possible. Do not explain anything. Do not repeat the input or the translation. Never include the <text_to_translate> tags or mention them in any way. Do not wrap the translated text with any extra tags. Do not ever use the \"text_to_translate\" tags yourself. {{custom_instructions}}"
+            },
+            {
+                "role": "user",
+                "content": "Translate the text inside the text_to_translate tag to Russian, output only the translated result. <text_to_translate>Ich habe Hunger.</text_to_translate> Translation:"
+            },
+            {
+                "role": "assistant",
+                "content": "Я хочу есть."
+            },
+            {
+                "role": "user",
+                "content": "Translate the text inside the text_to_translate tag from English to Japanese, output only the translated result. <text_to_translate>She always helps people, even when she's tired or busy, because she has a really kind heart.</text_to_translate> Translation:"
+            },
+            {
+                "role": "assistant",
+                "content": "彼女は疲れていたり忙しかったりしても、いつも人を助けてくれるんです。とても優しい心の持ち主なんですよ。"
             },
             {
                 "role": "user",
